@@ -266,23 +266,28 @@ def EdgeDistanceDist(): ##Working In current form
 #     PossibleNeighbours = NeighbourIndices(indice)
 #     for i in 
     
-TimesEvaluated = 20
+TimesEvaluated = 15
 LowerBound = 0.001 #nornally 0.0001
 UpperBound = 1#normally 1
 TempValues = np.linspace(LowerBound, UpperBound,TimesEvaluated)
-MeanEnergy = np.zeros(TimesEvaluated)
-for i in range(0,TimesEvaluated):
-    print(i)
-    Temp = TempValues[i]
-    NRG =0
-    for j in range(1,3):
-        Population = LatticeGenerate(NLangFeatures)
-        NRG += 0.5*Metropolis(NTimeSteps)
-    MeanEnergy[i] = NRG
-plt.plot(TempValues,MeanEnergy)
+
+GridSize =0
+for k in range(1,6):
+    MeanEnergy = np.zeros(TimesEvaluated)
+    GridSize=k*60
+    for i in range(0,TimesEvaluated):
+        print(math.floor(100*(TimesEvaluated*(k-1)+i)/(5*TimesEvaluated)),'% Complete')
+        Temp = TempValues[i]
+        NRG =0
+        for j in range(1,3):
+            Population = LatticeGenerate(NLangFeatures)
+            NRG += 0.5*Metropolis(NTimeSteps)
+        MeanEnergy[i] = NRG
+    plt.plot(TempValues,MeanEnergy, alpha=min(1,0.2*k))
+
 plt.xlabel("Temperature")
-plt.ylabel("Mean Energy of the system")
-plt.figtext(0.5, -0.3, subtitle_string , wrap=True, horizontalalignment='center', fontsize=8)
+plt.ylabel("System Energy")
+#plt.figtext(0.5, -0.3, subtitle_string , wrap=True, horizontalalignment='center', fontsize=8)
 #Without evluating energy up to about 3e5 is relatively quick
 
 """ Energy Temperature relationship"""

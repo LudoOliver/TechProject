@@ -16,11 +16,11 @@ global NLangFeatures
 global GeneralThreshold
 global NCounter
 ##Simulation Paramaters
-GridSize = 80
+GridSize = 300
 NLangFeatures = 4
-Temp = 0.8
+Temp = 0.1
 NTimeSteps = 10000000
-NFrames = 1
+NFrames = 20
 GeneralThreshold = 0.5*NLangFeatures
 StepsPerFrame = math.floor(NTimeSteps/NFrames)
 Ones=np.ones(NLangFeatures)
@@ -226,7 +226,7 @@ def Metropolis(TimeSteps):
     y=[Energy()]
     x=[0]
     for i in range(1,TimeSteps):
-        PreffenceDeltaE(random.randint(0, GridSize**2-1))
+        ThresholdDeltaE(random.randint(0, GridSize**2-1))
         #if i%10==0:
             #y.append(Energy())
         # if i%(StepsPerFrame)==0:
