@@ -16,11 +16,11 @@ global NLangFeatures
 global GeneralThreshold
 global NCounter
 ##Simulation Paramaters
-GridSize = 80
-NLangFeatures = 4
-Temp = 0.8
-NTimeSteps = 10000000
-NFrames = 1
+GridSize = 120
+NLangFeatures = 6
+Temp = 0.3
+NTimeSteps = 600000
+NFrames = 10
 GeneralThreshold = 0.5*NLangFeatures
 StepsPerFrame = math.floor(NTimeSteps/NFrames)
 Ones=np.ones(NLangFeatures)
@@ -28,6 +28,8 @@ Ones=np.ones(NLangFeatures)
 ##Counter variables
 NCounter = 0
 CounterConstant = math.floor(NTimeSteps/(NFrames*(NFrames+1)))
+
+subtitle_string = f"Threshold Model With \n Grid Length { GridSize },Language Vector Length {NLangFeatures},\n over {NTimeSteps} Timesteps"
 
 def Indice2Pos(x):
     j = x%GridSize+1
@@ -222,24 +224,9 @@ def LanguageDist():
 def Metropolis(TimeSteps):
     StepCounter = 1
     StepValue = CounterConstant
-    SpinVisualiser()
-    y=[Energy()]
-    x=[0]
     for i in range(1,TimeSteps):
-        PreffenceDeltaE(random.randint(0, GridSize**2-1))
-        #if i%10==0:
-            #y.append(Energy())
-        # if i%(StepsPerFrame)==0:
-        #     SpinVisualiser()
-        #     y.append(Energy())
-        if i == StepValue:
-            #SpinVisualiser()
-            y.append(Energy())
-            x.append(StepValue)
-            StepValue += (2*StepCounter+3)*CounterConstant
-            StepCounter+=1
-    #x = [x for x in range(len(y))]
-    return(x,y)
+        ThresholdDeltaE(random.randint(0, GridSize**2-1))
+    return Energy()
 
 def SpinVisualiser():
     
@@ -279,21 +266,23 @@ def EdgeDistanceDist(): ##Working In current form
 #     PossibleNeighbours = NeighbourIndices(indice)
 #     for i in 
     
-subtitle_string = f"With Grid Length { GridSize }, Language Vector Length {NLangFeatures},\n and Temperature {Temp}"
-Population = LatticeGenerate(NLangFeatures)
-DistanceFreqInitial = EdgeDistanceDist()
-LanguageDist()
-Time,NRG = Metropolis(NTimeSteps) 
-DistanceFreq = EdgeDistanceDist()
-plt.figure()
-plt.plot(Time,NRG)
-plt.title("Normalised Energy time relationship")
+TimesEvaluated = 20
+LowerBound = 0.001 #nornally 0.0001
+UpperBound = 1#normally 1
+TempValues = np.linspace(LowerBound, UpperBound,TimesEvaluated)
+MeanEnergy = np.zeros(TimesEvaluated)
+for i in range(0,TimesEvaluated):
+    print(i)
+    Temp = TempValues[i]
+    NRG =0
+    for j in range(1,3):
+        Population = LatticeGenerate(NLangFeatures)
+        NRG += 0.5*Metropolis(NTimeSteps)
+    MeanEnergy[i] = NRG
+plt.plot(TempValues,MeanEnergy)
+plt.xlabel("Temperature")
+plt.ylabel("Mean Energy of the system")
 plt.figtext(0.5, -0.3, subtitle_string , wrap=True, horizontalalignment='center', fontsize=8)
-plt.figure()
-plt.bar([i for i in range(0,NLangFeatures+1)],DistanceFreq)
-plt.title("Distribution of Distance Between Neighbours")
-plt.figtext(0.5, -0.3, subtitle_string , wrap=True, horizontalalignment='center', fontsize=8)
-LanguageDist()
 #Without evluating energy up to about 3e5 is relatively quick
 
 """ Energy Temperature relationship"""
