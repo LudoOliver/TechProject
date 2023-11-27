@@ -19,12 +19,15 @@ global NCounter
 GridSize = 200
 NLangFeatures = 6
 Temp = 0.3
-NTimeSteps = 1000000
-NFrames = 10
+NTimeSteps = 10000000
+NFrames = 30
 GeneralThreshold = 0.5*NLangFeatures
 StepsPerFrame = math.floor(NTimeSteps/NFrames)
 Ones=np.ones(NLangFeatures)
-
+"""Notes
+Conor goes to 2 as limit for temperature
+Investigate wtf is going on with simple delta e
+"""
 ##Counter variables
 NCounter = 0
 CounterConstant = math.floor(NTimeSteps/(NFrames*(NFrames+1)))
@@ -222,10 +225,23 @@ def LanguageDist():
     return SpinDict
 
 def Metropolis(TimeSteps):
-    StepCounter = 1
-    StepValue = CounterConstant
+    #StepCounter = 1
+    #StepValue = CounterConstant
+    #OldEnergy= 10
+    EnergyArray = [10,10,10]
     for i in range(1,TimeSteps):
-        ThresholdDeltaE(random.randint(0, GridSize**2-1))
+        PreffenceDeltaE(random.randint(0, GridSize**2-1))
+        if i%StepsPerFrame==0:
+            #SpinVisualiser()
+            NewEnergy=Energy()
+            MeanEnergy = sum(EnergyArray[-3:])/3
+            if abs(MeanEnergy-NewEnergy) <0.01:
+                print(f"Settled after {i} steps")
+                return NewEnergy
+            EnergyArray.append(NewEnergy)
+            #StepValue += (2*StepCounter+3)*CounterConstant
+            #StepCounter+=1
+    print(f"Failed to converge after {NTimeSteps} time steps, with grid size {GridSize}")
     return Energy()
 
 def SpinVisualiser():
@@ -268,13 +284,18 @@ def EdgeDistanceDist(): ##Working In current form
     
 TimesEvaluated = 15
 LowerBound = 0.001 #nornally 0.0001
-UpperBound = 1#normally 1
+UpperBound = 2#normally 1
 TempValues = np.linspace(LowerBound, UpperBound,TimesEvaluated)
 
+def MakeNormal(InArray):
+    Top = max(InArray)
+    Bottom = min(InArray)
+    Output = [(i-Bottom)/(Top-Bottom)-1 for i in InArray]
+    return Output
 GridSize =0
-for k in range(1,6):
+for k in range(1,2): #should be 6, alpha as .2*k
     MeanEnergy = np.zeros(TimesEvaluated)
-    GridSize=k*60
+    GridSize= 240 #should be k*60
     for i in range(0,TimesEvaluated):
         print(math.floor(100*(TimesEvaluated*(k-1)+i)/(5*TimesEvaluated)),'% Complete')
         Temp = TempValues[i]
@@ -283,10 +304,11 @@ for k in range(1,6):
             Population = LatticeGenerate(NLangFeatures)
             NRG += 0.5*Metropolis(NTimeSteps)
         MeanEnergy[i] = NRG
-    plt.plot(TempValues,MeanEnergy, alpha=min(1,0.2*k))
-
+    plt.plot(TempValues,MakeNormal(MeanEnergy), alpha=1, label=f"Gridsize ={GridSize}")
+plt.legend()
 plt.xlabel("Temperature")
 plt.ylabel("System Energy")
+plt.title("Prefference Phase Behaviour")
 #plt.figtext(0.5, -0.3, subtitle_string , wrap=True, horizontalalignment='center', fontsize=8)
 #Without evluating energy up to about 3e5 is relatively quick
 
