@@ -43,6 +43,10 @@ GeneralThreshold = 0.5*NLangFeatures
 StepsPerFrame = math.floor(NTimeSteps/NFrames)
 Ones=np.ones(NLangFeatures)
 
+
+
+Descriptor= np.array(GridSize,Temp,NTimeSteps,NLangFeatures)
+
 ConvergenceThreshold = 0.001 #was 0.01 for large scale
 
 ##Counter variables
@@ -304,7 +308,7 @@ Population = LatticeGenerate(NLangFeatures)
 
 BigMatrix = MakeArray()
 E = SimpleMetro(NTimeSteps)
-print(BigMatrix)
+#print(BigMatrix)
 np.savez('TestOut.npz', BigMatrix)
 #pr.disable()
 #pr.print_stats(sort = "cumtime")
