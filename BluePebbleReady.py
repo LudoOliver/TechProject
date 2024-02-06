@@ -8,33 +8,55 @@ Created on Thu Oct 12 13:05:21 2023
 #import torch as t
 import math
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import random
-import time
-import cProfile
+import sys
+#import time
+#import cProfile
+
+"""Thinking about taking input
+could pass gridsize as arguement fairly easy
+take it to be some 20*task number = task
+to pass temperature even simpler?
+eg temp = 0.1*task n
+probably wont pass nlangfeatures
+passing mode -could use modular arithemtic?
+or just 3 alternative versions
+
+"""
+
+
+
+
 global Temp
 global GridSize 
 global NLangFeatures
 global GeneralThreshold
 global NCounter
 ##Simulation Paramaters
-GridSize = 400
+GridSize = 20
 NLangFeatures = 8
-Temp = 0.7
+Temp = 0.1
 NTimeSteps = int(1e6) #was 1e7
 NFrames = 30
 GeneralThreshold = 0.5*NLangFeatures
 StepsPerFrame = math.floor(NTimeSteps/NFrames)
 Ones=np.ones(NLangFeatures)
-"""Notes
-Conor goes to 2 as limit for temperature
-Investigate wtf is going on with simple delta e
-"""
+
+ConvergenceThreshold = 0.001 #was 0.01 for large scale
+
 ##Counter variables
 NCounter = 0
 CounterConstant = math.floor(NTimeSteps/(NFrames*(NFrames+1)))
+#MultiTemp variables
+TimesEvaluated = 15
+LowerBound = 0.001 #nornally 0.0001
+UpperBound = 2#normally 1
+TempValues = np.linspace(LowerBound, UpperBound,TimesEvaluated)
+#EnableGraphs
+#GraphFlag = 1
 
-subtitle_string = f"Threshold Model With \n Grid Length { GridSize },Language Vector Length {NLangFeatures},\n over {NTimeSteps} Timesteps"
+#subtitle_string = f"Evaulated for L ={ GridSize }, {NLangFeatures} Spins ,over {NTimeSteps} Steps"
 
 def Indice2Pos(x):
     j = x%GridSize+1
@@ -79,6 +101,7 @@ class Speaker():
         self.Indice = Index
         self.Spin = np.random.choice(a=[-1, 1], size=(NLangFeatures))
         self.Neighbours = SpeakerNeighbour(Index)
+        
     def MostAlligned(self):
         #np.random.shuffle(XNeighbours)
         Fitness = []
@@ -86,6 +109,7 @@ class Speaker():
             Fitness.append(np.count_nonzero(Population[i].Spin!=self.Spin))
         BestNeighbours = self.Neighbours[(Fitness.index(min(Fitness)))]
         return BestNeighbours
+    
     def PreffenceDeltaE(self): 
         Closest = self.MostAlligned()
         SpinToChange = random.randint(0, NLangFeatures-1)
@@ -95,6 +119,7 @@ class Speaker():
         elif random.random() < math.exp((-2)/Temp):
             self.Spin[SpinToChange] *= -1
         return
+    
     def SimpleDeltaE(self): 
         YSum = 0
         SpinToChange = random.randint(0, NLangFeatures-1)
@@ -114,7 +139,7 @@ class Speaker():
     
     def ThresholdDeltaE(self): ##Made to only change one spin
 
-        XNeighbours = ThresholdNeighbours(self)
+        XNeighbours = self.ThresholdNeighbours()
         if not XNeighbours:
             XNeighbours = self.Neighbours
         YSum = 0
@@ -130,7 +155,7 @@ class Speaker():
         return
     
 
-        #, p=[0.99,0.01]) tests that energy does reflect dgeree of randomisation
+    
         
 def LatticeGenerate(NLangFeatures):
     
@@ -152,15 +177,7 @@ def SideIndices(indice):
         return [indice+GridSize]
     else:
         return PossibleNeighbours
-def Energy():
-    SumSum = 0
-    for i in range(0,GridSize**2):
-        AgentX = 0
-        XNeighbours = SpeakerNeighbour(i)
-        for j in XNeighbours:
-            AgentX += np.dot(Population[i].Spin,Population[j].Spin)
-        SumSum += AgentX
-    return SumSum*(-1)/(4*(GridSize**2)*NLangFeatures)
+
 
 def FastEnergy():
     SumSum = 0
@@ -173,142 +190,11 @@ def FastEnergy():
 
 
 
-# def SimpleDeltaE(x): ##Made to only change one spin
-
-#     XNeighbours = SpeakerNeighbour(x)
-#     YSum = 0
-#     SpinToChange = random.randint(0, NLangFeatures-1)
-#     for i in XNeighbours:
-#         YSum += (Population[i].Spin)[SpinToChange]
-#     DE= 2*((Population[x].Spin)[SpinToChange])*YSum/len(XNeighbours)
-#     if DE <= 0:
-#         Population[x].Spin[SpinToChange] *= -1
-#     elif random.random() < math.exp((-DE)/Temp):
-#         Population[x].Spin[SpinToChange] *= -1
-#     return
-
-# def ExclusionDeltaE(x): ##Made to only change one spin
-
-#     XNeighbours = [NotLeastAlligned(x)]
-#     YSum = 0
-#     SpinToChange = random.randint(0, NLangFeatures-1)
-#     for i in XNeighbours:
-#         YSum += (Population[i].Spin)[SpinToChange]
-#     DE= 2*((Population[x].Spin)[SpinToChange])*YSum/len(XNeighbours)
-#     if DE <= 0:
-#         Population[x].Spin[SpinToChange] *= -1
-#     elif random.random() < math.exp((-DE)/Temp):
-#         Population[x].Spin[SpinToChange] *= -1
-#     return
-# def ThresholdDeltaE(x): ##Made to only change one spin
-
-#     XNeighbours = ThresholdNeighbours(x)
-#     if not XNeighbours:
-#         XNeighbours = SpeakerNeighbour(x)
-#     YSum = 0
-#     SpinToChange = random.randint(0, NLangFeatures-1)
-#     for i in XNeighbours:
-#         YSum += (Population[i].Spin)[SpinToChange]
-#     DE= 2*((Population[x].Spin)[SpinToChange])*YSum/len(XNeighbours)
-#     if DE <= 0:
-#         Population[x].Spin[SpinToChange] *= -1
-#     elif random.random() < math.exp((-DE)/Temp):
-#         Population[x].Spin[SpinToChange] *= -1
-        
-#     return
-# def PreffenceDeltaE(x): ##Made to only change one spin
-
-#     Closest = MostAlligned(x)
-#     SpinToChange = random.randint(0, NLangFeatures-1)
-#     DE= 2*((Population[x].Spin)[SpinToChange])*Population[Closest].Spin[SpinToChange]
-#     if DE <= 0:
-#         Population[x].Spin[SpinToChange] *= -1
-#     elif random.random() < math.exp((-DE)/Temp):
-#         Population[x].Spin[SpinToChange] *= -1
-#     return
 
 
-# def MostAlligned(x):
-#     XNeighbours = (SpeakerNeighbour(x))
-#     np.random.shuffle(XNeighbours)
-#     Fitness = []
-#     for i in XNeighbours:
-#         Fitness.append(np.count_nonzero(Population[i].Spin!=Population[x].Spin))
-#     BestNeighbours = XNeighbours[(Fitness.index(min(Fitness)))]
-#     return BestNeighbours
-
-def NotLeastAlligned(x):
-    XNeighbours = (SpeakerNeighbour(x))
-    np.random.shuffle(XNeighbours)
-    Fitness = []
-    for i in XNeighbours:
-        Fitness.append(np.count_nonzero(Population[i].Spin!=Population[x].Spin))
-    BestNeighbours = XNeighbours.pop(Fitness.index(min(Fitness)))
-    return BestNeighbours
-
-def ThresholdNeighbours(x):
-    XNeighbours = (SpeakerNeighbour(x))
-    return [i for i in XNeighbours 
-            if np.count_nonzero(Population[i].Spin!=Population[x].Spin)<GeneralThreshold]
-    
-# def SimpleDeltaE(x): this spins the whole thing
-
-# def LocalisedDeltaE(x): #no current consideration of temperature in this model
-#     XNeighbours = SpeakerNeighbour(x)
-#     YSum = np.zeros(NLangFeatures)
-#     for i in XNeighbours:
-#         YSum = np.add(Population[i].Spin,YSum)
-#     DiffVec = 1-np.abs(Population[x].Spin-np.sign(YSum-0.1*Population[x].Spin))
-#     ## Current 0.1 needs changing to avoid bias to + spin
-#     Population[x].Spin= np.multiply(Population[x].Spin, DiffVec)
-#     #if DE <= 0:
-#         #Population[x].Spin = Population[x].Spin*-1
-#     #elif random.random() < math.exp((-DE)/Temp):
-#         #Population[x].Spin = Population[x].Spin*-1
-#     return
 
 
-def LanguageDist():
-    BigList=[]
-    for i in Population:
-        BigList.append(np.array2string(i.Spin))
-    SpinDict = {}
-    for j in BigList:
-        if j in SpinDict:
-            SpinDict[j] += 1
-        else:
-            SpinDict.update({j: 1})
-    SpinDict = dict(sorted(SpinDict.items(),key=lambda item: item[1],reverse=True))
-    
-    #LanguageNames = list(SpinDict.keys())
-    LanguageFrequency = list(SpinDict.values())
-    plt.figure()
-    plt.plot(LanguageFrequency)
-    plt.title("Language Frequency Distribution")
-    plt.figtext(0.5, -0.3, subtitle_string , wrap=True, horizontalalignment='center', fontsize=8)
-    return SpinDict
-#@profile
-# def Metropolis(TimeSteps):
-#     #StepCounter = 1
-#     #StepValue = CounterConstant
-#     #OldEnergy= 10
-#     EnergyArray = [10,10,10]
-#     for i in range(1,TimeSteps):
-#         PreffenceDeltaE(random.randint(0, GridSize**2-1))
-#         if i%StepsPerFrame==0:
-#             #SpinVisualiser()
-#             NewEnergy=Energy()
-#             MeanEnergy = sum(EnergyArray[-3:])/3
-#             if abs(MeanEnergy-NewEnergy) <0.01:
-#                 print(f"Settled after {i} steps")
-#                 return NewEnergy
-#             EnergyArray.append(NewEnergy)
-#             #StepValue += (2*StepCounter+3)*CounterConstant
-#             #StepCounter+=1
-#     print(f"Failed to converge after {NTimeSteps} time steps, with grid size {GridSize}")
-#     return Energy()
-
-def ClassPrefMet(TimeSteps):
+def PreffMetro(TimeSteps):
     #StepCounter = 1
     #StepValue = CounterConstant
     #OldEnergy= 10
@@ -325,28 +211,66 @@ def ClassPrefMet(TimeSteps):
             EnergyArray.append(NewEnergy)
             #StepValue += (2*StepCounter+3)*CounterConstant
             #StepCounter+=1
-    print(f"Failed to converge after {NTimeSteps} time steps, with grid size {GridSize}")
-    return Energy()
+    print(f"Prefference failed to converge in {NTimeSteps} time steps, with L= {GridSize}")
+    return FastEnergy()
 
-def SpinVisualiser():
-    
-    #will have to update not to switch colors
+def ThreshMetro(TimeSteps):
+    #StepCounter = 1
+    #StepValue = CounterConstant
+    #OldEnergy= 10
+    EnergyArray = [10,10,10]
+    for i in range(1,TimeSteps):
+        Population[random.randint(0, GridSize**2-1)].ThresholdDeltaE()
+        if i%StepsPerFrame==0:
+            #SpinVisualiser()
+            NewEnergy= FastEnergy()
+            MeanEnergy = sum(EnergyArray[-3:])/3
+            if abs(MeanEnergy-NewEnergy) <0.01:
+                print(f"Settled after {i} steps")
+                return NewEnergy
+            EnergyArray.append(NewEnergy)
+            #StepValue += (2*StepCounter+3)*CounterConstant
+            #StepCounter+=1
+    print(f"Threshold failed to converge in {NTimeSteps}steps, with L= {GridSize}")
+    return FastEnergy()
 
-    """ Currently only works for 1d spin"""
-    zs=np.zeros((GridSize,GridSize))
-    plt.style.use('_mpl-gallery-nogrid')
-    #plt.style.use('classic')
-    for i in range(0,len(Population)):
-        a,b = Indice2Pos(i)
-        zs[a-1,b-1]=(np.sum(Population[i].Spin-Ones))
-    fig, ax = plt.subplots()
-    ax.axis('off')
-    ax.imshow(zs,cmap='viridis')
-    plt.show()
+def SimpleMetro(TimeSteps):
+    #StepCounter = 1
+    #StepValue = CounterConstant
+    #OldEnergy= 10
+    EnergyArray = [10,10,10]
+    for i in range(1,TimeSteps):
+        Population[random.randint(0, GridSize**2-1)].SimpleDeltaE()
+        if i%StepsPerFrame==0:
+            #SpinVisualiser()
+            NewEnergy= FastEnergy()
+            MeanEnergy = sum(EnergyArray[-3:])/3
+            if abs(MeanEnergy-NewEnergy) <0.01:
+                print(f"Settled after {i} steps")
+                return NewEnergy
+            EnergyArray.append(NewEnergy)
+            #StepValue += (2*StepCounter+3)*CounterConstant
+            #StepCounter+=1
+    print(f"Simple failed to converge in {NTimeSteps}steps, with L= {GridSize}")
+    return FastEnergy()
+
+
+def LanguageDist():
+    BigList=[]
+    for i in Population:
+        BigList.append(np.array2string(i.Spin))
+    SpinDict = {}
+    for j in BigList:
+        if j in SpinDict:
+            SpinDict[j] += 1
+        else:
+            SpinDict.update({j: 1})
+    SpinDict = dict(sorted(SpinDict.items(),key=lambda item: item[1],reverse=True))
     
-def TestSomeSpins():
-    for i in [7,13,15,19,78]:
-        print(Population[i].Spin)
+    return SpinDict
+
+
+
 
        
 def EdgeDistanceDist(): ##Working In current form
@@ -361,15 +285,10 @@ def EdgeDistanceDist(): ##Working In current form
                 DistanceFreq[NodeDistance] += 1
     return DistanceFreq
 
-# Ungrouped = [i for i in range(0,len(Population))]
-# def ClusterDist(indice,Ungrouped):
-#     PossibleNeighbours = NeighbourIndices(indice)
-#     for i in 
+def MakeArray():
+    return np.array([i.Spin for i in Population])
     
-TimesEvaluated = 15
-LowerBound = 0.001 #nornally 0.0001
-UpperBound = 2#normally 1
-TempValues = np.linspace(LowerBound, UpperBound,TimesEvaluated)
+
 
 def MakeNormal(InArray):
     Top = max(InArray)
@@ -377,22 +296,24 @@ def MakeNormal(InArray):
     Output = [(i-Bottom)/(Top-Bottom)-1 for i in InArray]
     return Output
 GridSize = 30
-tic = time.time()
+#tic = time.time()
 
-pr = cProfile.Profile()
-pr.enable()
+#pr = cProfile.Profile()
 
 Population = LatticeGenerate(NLangFeatures)
-ClassPrefMet(NTimeSteps)
 
-pr.disable()
-pr.print_stats(sort = "cumtime")
+BigMatrix = MakeArray()
+E = SimpleMetro(NTimeSteps)
+print(BigMatrix)
+np.savez('TestOut.npz', BigMatrix)
+#pr.disable()
+#pr.print_stats(sort = "cumtime")
 
-toc = time.time()
+#toc = time.time()
 
-print(toc-tic)
-print(Energy())
-print(FastEnergy())
+#print(toc-tic)
+#print(Energy())
+#print(FastEnergy())
 # for k in range(1,2): #should be 6, alpha as .2*k
 #     MeanEnergy = np.zeros(TimesEvaluated)
 #     GridSize= 240 #should be k*60
