@@ -11,6 +11,9 @@ import numpy as np
 #import matplotlib.pyplot as plt
 import random
 import sys
+import psutil
+import tracemalloc
+tracemalloc.start()
 #import time
 #import cProfile
 
@@ -45,7 +48,7 @@ Ones=np.ones(NLangFeatures)
 
 
 
-Descriptor= np.array(GridSize,Temp,NTimeSteps,NLangFeatures)
+Descriptor= np.array([GridSize,Temp,NTimeSteps,NLangFeatures])
 
 ConvergenceThreshold = 0.001 #was 0.01 for large scale
 
@@ -310,6 +313,7 @@ BigMatrix = MakeArray()
 E = SimpleMetro(NTimeSteps)
 #print(BigMatrix)
 np.savez('TestOut.npz', BigMatrix)
+print("Current %d, Peak %d" %tracemalloc.get_traced_memory())
 #pr.disable()
 #pr.print_stats(sort = "cumtime")
 

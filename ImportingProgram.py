@@ -10,6 +10,9 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+import psutil
+import tracemalloc
+tracemalloc.start()
 BluePebResult = np.load("BluePebbleOut.npz")
 #prin
 SimulatedArray = BluePebResult['arr_0']
@@ -42,3 +45,5 @@ plt.loglog(SpeakerNumbers)
 plt.loglog(BitSpeakerNumbers)
 plt.figure()
 plt.plot(BitSpeakerNumbers)
+
+print("Current %d, Peak %d" %tracemalloc.get_traced_memory())
