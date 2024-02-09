@@ -11,6 +11,7 @@ import numpy as np
 #import matplotlib.pyplot as plt
 import random
 import sys
+import os
 
 
 global Temp
@@ -21,9 +22,12 @@ global NCounter
 ##Simulation Paramaters
 try:
     PassedParameter= int(sys.argv[1])
-#print(type(PassedParameter))
 except:
-    PassedParameter=1
+    try:
+        PassedParameter = int(os.environ["SLURM_ARRAY_TASK_ID"])
+    except:
+        PassedParameter =1
+        print("both failed")
 GridSize = 400
 NLangFeatures = 8
 Temp = 0.1 * PassedParameter
@@ -291,11 +295,20 @@ def MakeArray():
 
 #pr = cProfile.Profile()
 
-Population = LatticeGenerate(NLangFeatures)
-BigMatrix = MakeArray()
-E = PreffMetro(NTimeSteps)
-Descriptor = np.array([GridSize,Temp,NTimeSteps,NLangFeatures])
-np.savez('Week14TestOut.npz', BigMatrix, Descriptor)
+
+DescriptorArray = np.array([GridSize,Temp,NLangFeatures])
+#DescriptorFileName = str((GridSize,Temp,NTimeSteps,NLangFeatures))+'.npz'
+DescriptorFileName = f"PrefL{GridSize}T{Temp:.2f}.npz"
+OutputDict = {}
+for i in range(0,10):
+    Population = LatticeGenerate(NLangFeatures)
+    E = PreffMetro(NTimeSteps)
+    CurrentMatrix = MakeArray()
+    OutputDict.update({str(i):CurrentMatrix})
+    #BigMatrix = BigMatrix
+
+#print(DescriptorString)
+np.savez(DescriptorFileName, **OutputDict)
 #pr.disable()
 #pr.print_stats(sort = "cumtime")
 
