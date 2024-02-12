@@ -82,12 +82,15 @@ for i in range(0,5):
     plt.savefig(FreqName,bbox_inches='tight', dpi=150,)
     #plt.figure(dpi=100, figsize=(10,10))
     plt.figure()
-    n,x,_ = plt.hist(OtherArray, bins=20)
+    n,x,_ = plt.hist(OtherArray, bins=20, density=True)
     #plt.title("Language distribution for")
     density = stats.gaussian_kde(OtherArray)
-    plt.plot(x,density(x)*np.sum(x)/2,color='k',label="Fitted Guassian")
+    plt.plot(x,density(x),color='k',label="Fitted Guassian")
+    plt.xticks([],[])
+    plt.yticks([],[])
     plt.title(f"Language distribution for T={0.3+0.1*i:.2f}")
     plt.xlabel("N speaker")
+    
     plt.ylabel("$n_s$ number of languages")
     plt.savefig(HistName,bbox_inches='tight', dpi=150,)
     
