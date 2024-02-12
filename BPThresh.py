@@ -28,11 +28,11 @@ except:
     except:
         PassedParameter =1
         print("both failed")
-GridSize = 400
+GridSize = 300
 NLangFeatures = 8
 Temp = 0.1 * PassedParameter
 #print(str(Temp)+"Temp Value")
-NTimeSteps = int(1e7) #was 1e7
+NTimeSteps = int(1e8) #was 1e7
 NFrames = 30
 GeneralThreshold = 0.5*NLangFeatures
 StepsPerFrame = math.floor(NTimeSteps/NFrames)
@@ -301,9 +301,10 @@ DescriptorArray = np.array([GridSize,Temp,NLangFeatures])
 DescriptorFileName = f"ThreshL{GridSize}T{Temp:.2f}.npz"
 OutputDict = {}
 for i in range(0,10):
+    print(f"{i*10}% done")
     Population = LatticeGenerate(NLangFeatures)
-    E = PreffMetro(NTimeSteps)
-    E = ThreshMetro()
+    E = ThreshMetro(NTimeSteps)
+    #E = ThreshMetro()
     CurrentMatrix = MakeArray()
     OutputDict.update({str(i):CurrentMatrix})
     #BigMatrix = BigMatrix

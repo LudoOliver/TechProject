@@ -75,7 +75,7 @@ for i in range(1,2):
     plt.title("Blue Pebble results for language distribution T=.3")
     
     plt.figure()
-    plt.hist(OtherArray, bins=50)
+    plt.hist(OtherArray, bins=20)
     plt.title("Binned togethr langauges")
 
 

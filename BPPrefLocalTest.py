@@ -32,7 +32,7 @@ GridSize = 40
 NLangFeatures = 8
 Temp = 0.4 * PassedParameter
 #print(str(Temp)+"Temp Value")
-NTimeSteps = int(1e7) #was 1e7
+NTimeSteps = int(1e9) #was 1e7
 NFrames = 3
 GeneralThreshold = 0.5*NLangFeatures
 StepsPerFrame = math.floor(NTimeSteps/NFrames)
