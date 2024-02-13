@@ -127,7 +127,7 @@ plt.savefig(DistName,bbox_inches='tight', dpi=300)
   
 
 plt.figure()  
-for j in range(0,5):
+for j in range(2,3):
     OtherArray = BigArray[j,:]     
     n,x = np.histogram(OtherArray, bins=20, density=True)
         #plt.title("Language distribution for")
