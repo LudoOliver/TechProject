@@ -9,6 +9,7 @@ Created on Thu Feb  8 16:48:37 2024
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import scipy.stats as stats
 
 #import psutil
 #import tracemalloc
@@ -63,10 +64,36 @@ Data = pd.read_csv("100Langs.csv", decimal=',')
 SpeakerNumbers = (Data["Total Speakers"]).to_numpy()
 
 
-for i in range(1,2):
+# for i in range(1,2):
+#     plt.figure()#,figsize=(10,10))
+    
+#     BluePebbleResult = ResultsFor("Pref", 0.3+0.1*i, 40)
+#     OtherArray =np.zeros(256)
+#     for j in BluePebbleResult.files:
+    
+#         Result = LanguageVector(BluePebbleResult[j])
+#         OtherArray += Result
+#         plt.plot(Result,label=f"Attempt{j}")
+        
+#     plt.xlabel("n languages")
+#     plt.ylabel("n speakers")
+#     plt.title(f"Language distribution for T={0.3+0.1*i}")
+#     FreqName = f"PrefResultForT{0.3+0.1*i}.jpeg"
+#     HistName = f"PrefHistForT{0.3+0.1*i}.jpeg"
+#     plt.savefig(FreqName,bbox_inches='tight', dpi=150,)
+#     #plt.figure(dpi=100, figsize=(10,10))
+#     plt.figure()
+#     plt.hist(OtherArray, bins=20)
+#     #plt.title("Language distribution for")
+#     plt.title(f"Language distribution for T={0.3+0.1*i}")
+#     plt.xlabel("N speaker")
+#     plt.ylabel("$n_s$ number of languages")
+#     plt.savefig(HistName,bbox_inches='tight', dpi=150,)
+BigArray = np.zeros([5,256])   
+for i in range(0,5):
     plt.figure()#,figsize=(10,10))
     
-    BluePebbleResult = ResultsFor("Pref", 0.3+0.1*i, 40)
+    BluePebbleResult = ResultsFor("Pref", 0.3+0.1*i, 300)
     OtherArray =np.zeros(256)
     for j in BluePebbleResult.files:
     
@@ -76,18 +103,34 @@ for i in range(1,2):
         
     plt.xlabel("n languages")
     plt.ylabel("n speakers")
-    plt.title(f"Language distribution for T={0.3+0.1*i}")
-    FreqName = f"PrefResultForT{0.3+0.1*i}.jpeg"
-    HistName = f"PrefHistForT{0.3+0.1*i}.jpeg"
+    plt.title(f"Language distribution for T={0.3+0.1*i:.2f}")
+    FreqName = f"PrefResultForT{0.3+0.1*i:.2f}.jpeg"
+    HistName = f"PrefHistForT{0.3+0.1*i:.2f}.jpeg"
     plt.savefig(FreqName,bbox_inches='tight', dpi=150,)
     #plt.figure(dpi=100, figsize=(10,10))
     plt.figure()
-    plt.hist(OtherArray, bins=20)
+    n,x,_ = plt.hist(OtherArray, bins=20, density=True)
     #plt.title("Language distribution for")
-    plt.title(f"Language distribution for T={0.3+0.1*i}")
+    density = stats.gaussian_kde(OtherArray)
+    plt.plot(x,density(x),color='k',label="Fitted Guassian")
+    plt.xticks([],[])
+    plt.yticks([],[])
+    plt.title(f"Language distribution for T={0.3+0.1*i:.2f}")
     plt.xlabel("N speaker")
     plt.ylabel("$n_s$ number of languages")
     plt.savefig(HistName,bbox_inches='tight', dpi=150,)
+    BigArray[i,:] = OtherArray
+    
+    #plt.figure()
+plt.figure()
+for i in range(0,5):
+    plt.plot(BigArray[i,:]/10,label=f"T={0.3+0.1*i}")
+plt.legend()
+plt.xticks([],[])
+plt.yticks([],[])
+plt.xlabel("Language")
+plt.ylabel("Number of speakers")
+plt.title("Language distribtuion across varying temperatures")
 
 
 #print(BluePebbleResult.files)
