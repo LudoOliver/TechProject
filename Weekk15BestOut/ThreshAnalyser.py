@@ -191,7 +191,7 @@ def polygon_under_graph(x, y):
 ax = plt.figure().add_subplot(projection='3d')
 
 #x = np.linspace(0., 10., 31)
-lambdas = [i*0.1+0.3 for i in range(0, 5)]
+lambdas = [(i*0.1)+0.3 for i in range(0, 5)]
 
 # verts[i] is a list of (x, y) pairs defining polygon i.
 gamma = np.vectorize(math.gamma)
@@ -204,21 +204,30 @@ for j in range(0,5):
     n,x = np.histogram(OtherArray, bins=20, density=True)
         #plt.title("Language distribution for")
     density = stats.gaussian_kde(OtherArray)     
-    verts.append(polygon_under_graph(x, density(x)))
+    #verts.append(polygon_under_graph(x, density(x)))
+    ax.plot(x,density(x),lambdas[j],color='k',zdir='y')
+    ax.add_collection3d((plt.fill_between(x,density(x),alpha=0.6)), zs=lambdas[j], zdir='y')
                        
 facecolors = plt.colormaps['viridis_r'](np.linspace(0, 1, len(verts)))
 
-poly = PolyCollection(verts, facecolors=facecolors, alpha=.7)
-ax.add_collection3d(poly, zs=lambdas, zdir='y')
-
-ax.set(zlim=(0,0.01), xlabel='Number of Languages', ylabel='Temperature', zlabel='$n_s$, number of speakers')
+#poly = PolyCollection(verts, facecolors=facecolors, alpha=.7)
+#ax.add_collection3d(poly, zs=lambdas, zdir='y')
+lambdas.insert(0,0)
+ax.set( xlabel='N',ylabel='T')
+ax.set_yticklabels([f"{i:.2f}"for i in lambdas],fontsize=7,verticalalignment='baseline',horizontalalignment='left')#, zlabel='$n_s$')
+ax.zaxis.set_rotate_label(False)
+ax.set_zlabel('$n_s$',rotation=0)
 # Hide grid lines
 ax.grid(False)
-
+#ax.invert_yaxis()
 # Hide axes ticks
 ax.set_xticks([])
-ax.set_yticks([])
+#ax.set_yticks(lambdas,labels="T",fontsize=5)
+#ax.set_yticks([])
+#ax.view_init(azim=100)
 ax.set_zticks([])
+ax.dist=15
+plt.savefig("Thresh3DLang.png",bbox_inches='tight', dpi=300)
 #ax.xticks([],[])
 #ax.yticks([],[])
 #plt.show()    
