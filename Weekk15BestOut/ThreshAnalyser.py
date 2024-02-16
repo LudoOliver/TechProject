@@ -18,8 +18,8 @@ import math
 
 from matplotlib.collections import PolyCollection
 #mpl.rcParams['axes.prop_cycle'] = mpl.cycler(color=["r", "k", "c"]) 
-N=7
-plt.rcParams["axes.prop_cycle"] = plt.cycler("color", plt.cm.viridis(np.linspace(0,0.7,N)))
+N=12
+plt.rcParams["axes.prop_cycle"] = plt.cycler("color", plt.cm.viridis(np.linspace(0.1,0.8,N)))
 
 #import psutil
 #import tracemalloc
@@ -99,19 +99,19 @@ def ResultsFor(mode,temperature,length):
 #     plt.xlabel("N speaker")
 #     plt.ylabel("$n_s$ number of languages")
 #     plt.savefig(HistName,bbox_inches='tight', dpi=150,)
-BigArray = np.zeros([5,256])
+BigArray = np.zeros([10,256])
 plt.figure()   
-for i in range(0,5):
+for i in range(6,16):
     #plt.figure()#,figsize=(10,10))
     
-    BluePebbleResult = ResultsFor("Thresh", 0.3+0.1*i, 300)
+    BluePebbleResult = ResultsFor("Thresh", 0.05*i, 300)
     OtherArray =np.zeros(256)
     for j in BluePebbleResult.files:
     
         Result = LanguageVector(BluePebbleResult[j])
         OtherArray += Result
     #     plt.plot(Result,label=f"Attempt{j}")
-    BigArray[i,:] = OtherArray
+    BigArray[i-6,:] = OtherArray
     # plt.xlabel("n languages")
     # plt.ylabel("n speakers")
     # plt.title(f"Language distribution for T={0.3+0.1*i:.2f}")
@@ -123,7 +123,7 @@ for i in range(0,5):
     n,x = np.histogram(OtherArray, bins=20, density=True)
     #plt.title("Language distribution for")
     density = stats.gaussian_kde(OtherArray)
-    plt.plot(x,density(x),label=f"T={0.3+0.1*i:.2f}",alpha=1-i*0.1)
+    plt.plot(x,density(x),label=f"T={0.05*i:.2f}",alpha=0.9)
     #plt.loglog(x,density(x),label=f"T={0.3+0.1*i:.2f}",alpha=1-i*0.1)
     
 DistName = "ThreshDistForVaryingT.jpeg"
@@ -137,12 +137,12 @@ plt.ylabel("$n_s$ number of languages")
   
 #%%
 plt.figure()  
-for j in range(0,5):
+for j in range(6,16):
     OtherArray = BigArray[j,:]     
     n,x = np.histogram(OtherArray, bins=20, density=True)
         #plt.title("Language distribution for")
     density = stats.gaussian_kde(OtherArray)
-    plt.plot(x,density(x),label=f"T={0.3+0.1*j:.2f}",alpha=1-i*0.1)
+    plt.plot(x,density(x),label=f"T={0.05*j:.2f}",alpha=0.9)
     plt.fill_between(x,density(x),alpha=0.4)
     #plt.loglog(x,density(x),label=f"T={0.3+0.1*j:.2f}",alpha=1-j*0.1)
    
@@ -186,12 +186,12 @@ def polygon_under_graph(x, y):
     the (x, y) line graph. This assumes x is in ascending order.
     """
     return [(x[0], 0.), *zip(x, y), (x[-1], 0.)]
+#plt.figure()
 
-
-ax = plt.figure().add_subplot(projection='3d')
+ax = plt.figure(figsize=(10,10),constrained_layout=True).add_subplot(projection='3d')
 
 #x = np.linspace(0., 10., 31)
-lambdas = [(i*0.1)+0.3 for i in range(0, 5)]
+lambdas = [(i*0.05) for i in range(6, 16)]
 
 # verts[i] is a list of (x, y) pairs defining polygon i.
 gamma = np.vectorize(math.gamma)
@@ -199,34 +199,50 @@ gamma = np.vectorize(math.gamma)
          #for l in lambdas]
 verts = []  
 mval=0                         
-for j in range(0,5):
+for j in range(0,len(lambdas)):
     OtherArray = BigArray[j,:]     
     n,x = np.histogram(OtherArray, bins=20, density=True)
         #plt.title("Language distribution for")
     density = stats.gaussian_kde(OtherArray)     
     #verts.append(polygon_under_graph(x, density(x)))
     ax.plot(x,density(x),lambdas[j],color='k',zdir='y')
-    ax.add_collection3d((plt.fill_between(x,density(x),alpha=0.6)), zs=lambdas[j], zdir='y')
+    ax.add_collection3d((plt.fill_between(x,density(x),alpha=0.5)), zs=lambdas[j], zdir='y')
                        
 facecolors = plt.colormaps['viridis_r'](np.linspace(0, 1, len(verts)))
 
 #poly = PolyCollection(verts, facecolors=facecolors, alpha=.7)
 #ax.add_collection3d(poly, zs=lambdas, zdir='y')
-lambdas.insert(0,0)
+#lambdas.insert(0,0)
 ax.set( xlabel='N',ylabel='T')
-ax.set_yticklabels([f"{i:.2f}"for i in lambdas],fontsize=7,verticalalignment='baseline',horizontalalignment='left')#, zlabel='$n_s$')
+#ax.xaxis.set_ticks(values_list)
+ax.set_yticks(lambdas)
+ax.set_yticklabels([f"{i:.2f}"for i in lambdas],fontsize=9,verticalalignment='baseline',horizontalalignment='left')#, zlabel='$n_s$')
 ax.zaxis.set_rotate_label(False)
-ax.set_zlabel('$n_s$',rotation=0)
+#ax.set_zlabel("Depth ($\mu$$m$)") # Updated
+
+ # (+) Added
+#ax.zaxis.set_label_coords(-10, -10)
+#ax.zaxis._axinfo['label']['juggled'] = (1,2,0)
+ax.set_zlabel('$n_s$',rotation=0,horizontalalignment='right',verticalalignment='baseline',fontsize=25, labelpad=-10)
+ax.tick_params(axis="z", pad=-3)
+ax.set_xlabel('N',rotation=0,horizontalalignment='right',verticalalignment='baseline',fontsize=25, labelpad=-10)
+ax.tick_params(axis="x", pad=-3)
+ax.set_ylabel('T',rotation=0,horizontalalignment='right',verticalalignment='baseline',fontsize=25, labelpad=10)
+ax.tick_params(axis="y", pad=1)
+#ax.zaxis._axinfo['label']['space_factor'] = 0
+ax.zaxis._axinfo['label']['juggled'] = (1,2,0)
 # Hide grid lines
 ax.grid(False)
 #ax.invert_yaxis()
 # Hide axes ticks
 ax.set_xticks([])
+ax.set_title("Language Distribution across $T \in [0.3,0.75]$",fontsize=30)
+ax.view_init(elev=30)
 #ax.set_yticks(lambdas,labels="T",fontsize=5)
 #ax.set_yticks([])
 #ax.view_init(azim=100)
 ax.set_zticks([])
-ax.dist=15
+#ax.dist=11
 plt.savefig("Thresh3DLang.png",bbox_inches='tight', dpi=300)
 #ax.xticks([],[])
 #ax.yticks([],[])
