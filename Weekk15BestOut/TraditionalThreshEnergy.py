@@ -19,6 +19,10 @@ global GridSize
 global NLangFeatures
 global GeneralThreshold
 global NCounter
+
+
+N=40
+plt.rcParams["axes.prop_cycle"] = plt.cycler("color", plt.cm.viridis(np.linspace(0.1,0.8,N)))
 ##Simulation Paramaters
 GridSize = 300
 NLangFeatures = 8
@@ -345,17 +349,18 @@ def Graphs():
 # E =PreffMetro(NTimeSteps)
 # if GraphFlag:
 #     Graphs()
-    
+#%%    
 def ResultsFor(mode,temperature,length):
     FileName = f"{mode}L{length}T{temperature:.2f}.npz"
     print(FileName)
     DataInFile = np.load(FileName)
     return DataInFile
     
-TempRange = [0.05*i for i in range(6,16)] 
-EnergyMatrix = np.zeros([10,10])
-for i in range(0,10):
-    Data= ResultsFor('Thresh', TempRange[i], 300)
+#TempRange = [0.05*i for i in range(6,16)] 
+TempRange = [f"{0.015*i:.2f}" for i in range(20,40)]+[f"{0.05*i:.2f}" for i in range(12,26)]
+EnergyMatrix = np.zeros([len(TempRange),10])
+for i in range(0,len(TempRange)):
+    Data= ResultsFor('Thresh', float(TempRange[i]), 300)
     for j in range(0,len(Data.files)):
         Population = LatticeGenerate(Data[str(j)])
         EnergyMatrix[i,j] = FastEnergy()
@@ -363,12 +368,14 @@ for i in range(0,10):
         
 #%%
 EnergyVector= np.mean(EnergyMatrix,axis=1) 
-plt.plot(TempRange,EnergyVector)   
+plt.plot([float(i) for i in TempRange],EnergyVector)   
 plt.xlabel("Temperature")
 plt.ylabel("Energy")
 plt.title("Threshold Phase Behaviour")
 #print(BigMatrix)
-
+#%%
+for i in range(0,10):
+    plt.plot([float(i) for i in TempRange],EnergyMatrix[:,i],alpha=0.2  )
 #pr.disable()
 #pr.print_stats(sort = "cumtime")
 

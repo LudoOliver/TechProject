@@ -13,7 +13,9 @@ import matplotlib as mpl
 from mpl_toolkits.mplot3d import Axes3D
 import scipy.stats as stats
 import math
+from scipy.interpolate import griddata
 
+from matplotlib import cm
 
 
 from matplotlib.collections import PolyCollection
@@ -99,19 +101,21 @@ def ResultsFor(mode,temperature,length):
 #     plt.xlabel("N speaker")
 #     plt.ylabel("$n_s$ number of languages")
 #     plt.savefig(HistName,bbox_inches='tight', dpi=150,)
-BigArray = np.zeros([10,256])
+TempRange = [f"{0.015*i:.2f}" for i in range(20,40)]+[f"{0.05*i:.2f}" for i in range(12,26)]
+
+BigArray = np.zeros([len(TempRange),256])
 plt.figure()   
-for i in range(6,16):
+for i in range(0,len(TempRange)):
     #plt.figure()#,figsize=(10,10))
     
-    BluePebbleResult = ResultsFor("Thresh", 0.05*i, 300)
+    BluePebbleResult = ResultsFor("Thresh", float(TempRange[i]), 300)
     OtherArray =np.zeros(256)
     for j in BluePebbleResult.files:
     
         Result = LanguageVector(BluePebbleResult[j])
         OtherArray += Result
     #     plt.plot(Result,label=f"Attempt{j}")
-    BigArray[i-6,:] = OtherArray
+    BigArray[i,:] = OtherArray
     # plt.xlabel("n languages")
     # plt.ylabel("n speakers")
     # plt.title(f"Language distribution for T={0.3+0.1*i:.2f}")
@@ -123,7 +127,7 @@ for i in range(6,16):
     n,x = np.histogram(OtherArray, bins=20, density=True)
     #plt.title("Language distribution for")
     density = stats.gaussian_kde(OtherArray)
-    plt.plot(x,density(x),label=f"T={0.05*i:.2f}",alpha=0.9)
+    plt.plot(x,density(x),label=f"T={TempRange[i]}",alpha=0.9)
     #plt.loglog(x,density(x),label=f"T={0.3+0.1*i:.2f}",alpha=1-i*0.1)
     
 DistName = "ThreshDistForVaryingT.jpeg"
@@ -137,12 +141,12 @@ plt.ylabel("$n_s$ number of languages")
   
 #%%
 plt.figure()  
-for j in range(6,16):
+for j in range(0,len(TempRange)):
     OtherArray = BigArray[j,:]     
     n,x = np.histogram(OtherArray, bins=20, density=True)
         #plt.title("Language distribution for")
     density = stats.gaussian_kde(OtherArray)
-    plt.plot(x,density(x),label=f"T={0.05*j:.2f}",alpha=0.9)
+    plt.plot(x,density(x),label=f"T={TempRange[i]}",alpha=1)
     plt.fill_between(x,density(x),alpha=0.4)
     #plt.loglog(x,density(x),label=f"T={0.3+0.1*j:.2f}",alpha=1-j*0.1)
    
@@ -191,8 +195,8 @@ def polygon_under_graph(x, y):
 ax = plt.figure(figsize=(10,10),constrained_layout=True).add_subplot(projection='3d')
 
 #x = np.linspace(0., 10., 31)
-lambdas = [(i*0.05) for i in range(6, 16)]
-
+#lambdas = [(i*0.05) for i in range(6, 16)]
+lambdas = [float(i) for i in TempRange]
 # verts[i] is a list of (x, y) pairs defining polygon i.
 gamma = np.vectorize(math.gamma)
 #verts = [polygon_under_graph(x, density(x)
@@ -206,7 +210,7 @@ for j in range(0,len(lambdas)):
     density = stats.gaussian_kde(OtherArray)     
     #verts.append(polygon_under_graph(x, density(x)))
     ax.plot(x,density(x),lambdas[j],color='k',zdir='y')
-    ax.add_collection3d((plt.fill_between(x,density(x),alpha=0.5)), zs=lambdas[j], zdir='y')
+    ax.add_collection3d((plt.fill_between(x,density(x),alpha=0.3)), zs=lambdas[j], zdir='y')
                        
 facecolors = plt.colormaps['viridis_r'](np.linspace(0, 1, len(verts)))
 
@@ -257,7 +261,68 @@ plt.savefig("Thresh3DLang.png",bbox_inches='tight', dpi=300)
 # plt.xlabel("Language")
 # plt.ylabel("Number of speakers")
 # plt.title("Language distribution across varying temperatures")
+#%%
+"""Trying 3dNumber2"""
 
+#plt.figure()
+
+ax = plt.figure(figsize=(10,10),constrained_layout=True).add_subplot(projection='3d')
+
+
+
+#x = np.linspace(0., 10., 31)
+#lambdas = [(i*0.05) for i in range(6, 16)]
+lambdas = [float(i) for i in TempRange]
+# verts[i] is a list of (x, y) pairs defining polygon i.
+gamma = np.vectorize(math.gamma)
+#verts = [polygon_under_graph(x, density(x)
+         #for l in lambdas]
+verts = []  
+mval=0      
+SurfX,SurfY,SurfZ = np.asarray(None),np.asarray(None),np.asarray(None)              
+for j in range(0,len(lambdas)):
+    OtherArray = BigArray[j,:]     
+    n,x = np.histogram(OtherArray, bins=20, density=True)
+        #plt.title("Language distribution for")
+    density = stats.gaussian_kde(OtherArray) 
+    height = density(x)    
+    SurfX = np.hstack([SurfX,x])
+    #SurfZ.append(height)
+    SurfZ = np.hstack([SurfZ,height])
+    SurfY=np.hstack([SurfY,lambdas[i]])
+#SurfX = np.array(SurfX[1:],dtype=float32)    
+SurfX = np.array(SurfX[1:],dtype=np.float32)
+SurfY = np.array(SurfY[1:],dtype=np.float32)  
+SurfZ = np.array(SurfZ[1:],dtype=np.float32)  
+
+
+BigX,BigY = np.meshgrid(SurfX,SurfY)
+
+Z_mesh = griddata((SurfX, SurfY), SurfZ, (BigX,BigY),method='cubic')  
+#Z_mesh = SurfZ.reshape(BigX.shape)
+#fig = plt.figure()
+#ax = Axes3D(fig)
+ax.plot_surface(BigX, BigY, Z_mesh)#, vmin=Z_mesh.min())#,cmap='viridis')
+
+fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+ax.plot_wireframe(BigX, BigY, Z_mesh, cmap=cm.Blues)
+#surf = ax.plot_trisurf(SurfX[1:], SurfY[1:], SurfZ[1:], linewidth=0.1)
+#fig.colorbar(surf, shrink=0.5, aspect=5)
+    # if j==0:
+    #     BigX,Y = np.meshgrid(x,lambdas)
+    # else:
+    #     BigX,_ =np.meshgrid(x,lambdas)
+    #Z = height.reshape(BigX.shape)    
+    #ax.plot_surface(BigX,Y,height)
+    #verts.append(polygon_under_graph(x, density(x)))
+    #ax.plot(x,density(x),lambdas[j],color='k',zdir='y')
+    
+    #ax.add_collection3d((plt.fill_between(x,density(x),alpha=0.3)), zs=lambdas[j], zdir='y')
+                       
+#facecolors = plt.colormaps['viridis_r'](np.linspace(0, 1, len(verts)))
+
+
+#%%
 
 #print(BluePebbleResult.files)
 #BitLangDist = LanguageDist(SimulatedArray)
