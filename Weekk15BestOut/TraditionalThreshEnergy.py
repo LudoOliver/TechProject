@@ -357,17 +357,19 @@ def ResultsFor(mode,temperature,length):
     return DataInFile
     
 #TempRange = [0.05*i for i in range(6,16)] 
-TempRange = [f"{0.015*i:.2f}" for i in range(20,40)]+[f"{0.05*i:.2f}" for i in range(12,26)]
-EnergyMatrix = np.zeros([len(TempRange),10])
+TempRange = [0.015*i for i in range(20,40)]+[0.05*i for i in range(6,26)]
+TempRange.sort()
+
+EnergyMatrix = np.zeros([len(TempRange),15])+np.nan
 for i in range(0,len(TempRange)):
     Data= ResultsFor('Thresh', float(TempRange[i]), 300)
     for j in range(0,len(Data.files)):
         Population = LatticeGenerate(Data[str(j)])
         EnergyMatrix[i,j] = FastEnergy()
-        print(f"{i*10+j}% done")
+        #print(f"{i*10+j}% done")
         
 #%%
-EnergyVector= np.mean(EnergyMatrix,axis=1) 
+EnergyVector= np.nanmean(EnergyMatrix,axis=1) 
 plt.plot([float(i) for i in TempRange],EnergyVector)   
 plt.xlabel("Temperature")
 plt.ylabel("Energy")
