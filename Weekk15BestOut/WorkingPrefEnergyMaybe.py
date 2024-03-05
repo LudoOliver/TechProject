@@ -11,6 +11,11 @@ import random
 import sys
 #import time
 import cProfile
+from scipy.stats import lognorm , norm, shapiro
+from scipy import stats
+
+import statsmodels.api as sm 
+import pylab #as py 
 
 global Temp
 global GridSize 
@@ -400,7 +405,8 @@ for i in range(0,len(TempRange)):
 plt.cla()
 EnergyVector= np.nanmean(EnergyMatrix,axis=1) 
 for i in range(15):
-    plt.plot(TempRange, EnergyMatrix[:,i],alpha=0.4)
+    #plt.plot(TempRange, EnergyMatrix[:,i],alpha=0.4)
+    stats.probplot(PrefBigArray[i,:], dist="norm", plot=pylab)
 plt.plot([float(i) for i in TempRange],EnergyVector,color='b')   
 plt.xlabel("Temperature")
 plt.ylabel("Energy")
@@ -409,7 +415,7 @@ plt.yticks([])
 #plt.ylim((-0.55,-0.2))
 plt.title("Preference Phase Behaviour")
 
-
+stats.probplot(PrefBigArray, dist="norm", plot=pylab)
 
 #%%
 plt.figure()  
@@ -418,21 +424,28 @@ for j in range(0,len(TempRange)):
     n,x = np.histogram(OtherArray, bins=20, density=True)
         #plt.title("Language distribution for")
     density = stats.gaussian_kde(OtherArray)
-    plt.plot(x,density(x),label=f"T={TempRange[i]}",alpha=1)
-    plt.fill_between(x,density(x),alpha=0.4)
+    plt.plot(x,density(x),label=f"T={TempRange[i]}",alpha=0.1)
+    #plt.fill_between(x,density(x),alpha=0.4)
     #plt.loglog(x,density(x),label=f"T={0.3+0.1*j:.2f}",alpha=1-j*0.1)
    
 DistName = "ThreshDistForLogLog.jpeg"
-plt.legend()
+#plt.legend()
 plt.xticks([],[])
 plt.yticks([],[])
-plt.title("Language Distribution of the Threshold Model")
+plt.title("Language Distribution of the Preference Model")
 plt.xlabel("N speakers")
 plt.ylabel("$n_s$ number of languages")
 #plt.savefig(DistName,bbox_inches='tight', dpi=300)
 
-
-
+#%%
+fig = plt.figure()
+ax = fig.add_subplot(111)
+#x = stats.loggamma.rvs(c=2.5, size=500, random_state=rng)
+#res = stats.probplot(x, dist=stats.loggamma, sparams=(2.5,), plot=ax)
+for i in range(15):
+    #plt.plot(TempRange, EnergyMatrix[:,i],alpha=0.4)
+    stats.probplot(PrefBigArray[i,:], dist="norm", plot=ax)
+ax.set_title("QQ plot of Prefence model across varying Temp")
 
 
 

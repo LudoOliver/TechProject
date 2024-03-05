@@ -13,6 +13,7 @@ import scipy as sp
 from scipy.stats import lognorm , norm, shapiro
 import statsmodels.api as sm
 import pylab
+import scipy.stats as stats
 
 def ResultsFor(mode,temperature,length):
     FileName = f"{mode}L{length}T{temperature:.2f}.npz"
@@ -62,9 +63,9 @@ for i in range(0,len(TempRange)):
     OtherArray =np.zeros(256)
     for j in BluePebbleResult.files:
     
-        Result = LanguageVector(BluePebbleResult[j])
-        OtherArray += Result
-    BigArray[i,:] = OtherArray
+        BigArray[i,:] += LanguageVector(BluePebbleResult[j])
+        #OtherArray += Result
+     #= OtherArray
 #%%
 plt.plot(TempRange,np.mean(BigArray,axis=1))
 plt.figure()
@@ -73,6 +74,24 @@ plt.figure()
 
 a,b=shapiro([1,23,4])
 print(a,b)
+#%%
+#%%
+
+#x = stats.loggamma.rvs(c=2.5, size=500, random_state=rng)
+#res = stats.probplot(x, dist=stats.loggamma, sparams=(2.5,), plot=ax)
+for i in range(34):
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    #plt.plot(TempRange, EnergyMatrix[:,i],alpha=0.4)
+    stats.probplot(BigArray[i,:], dist="norm", plot=ax)
+    ax.set_title(f"QQ plot of Threshold model at T={TempRange[i]}")
+
+for i in range(34):
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    #plt.plot(TempRange, EnergyMatrix[:,i],alpha=0.4)
+    stats.probplot(np.log(BigArray[i,:]), dist="norm", plot=ax)
+    ax.set_title(f"Logarithmic QQ plot of Threshold model at T={TempRange[i]}")
 #%%
 TestStatArray = np.zeros(len(TempRange))
 TestProbArray = np.zeros(len(TempRange))
