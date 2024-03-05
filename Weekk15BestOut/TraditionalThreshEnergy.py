@@ -369,14 +369,15 @@ for i in range(0,len(TempRange)):
         #print(f"{i*10+j}% done")
         
 #%%
-plt.figure(figsize=(3,4))
-EnergyVector= np.nanmean(EnergyMatrix,axis=1) 
+#plt.figure(figsize=(3,4))
+plt.cla()
+EnergyVector= np.nanvar(EnergyMatrix,axis=1) 
 plt.plot([float(i) for i in TempRange],EnergyVector,color='b')   
 plt.xlabel("Temperature")
 plt.ylabel("Energy")
 plt.yticks([])
-plt.xlim((0.4,0.7))#, kwargs)
-plt.ylim((-0.55,-0.2))
+#plt.xlim((0.4,0.7))#, kwargs)
+#plt.ylim((-0.55,-0.2))
 plt.title("Threshold Phase Behaviour")
 #print(BigMatrix)
 #%%
