@@ -23,14 +23,7 @@ from matplotlib.collections import PolyCollection
 N=12
 plt.rcParams["axes.prop_cycle"] = plt.cycler("color", plt.cm.viridis(np.linspace(0.1,0.8,N)))
 
-#import psutil
-#import tracemalloc
-#tracemalloc.start()
-#BluePebResult = np.load("BluePebbleOut.npz")
-#prin
-#SimulatedArray = BluePebResult['arr_0']
-#TestingPassBack = BluePebResult['arr_1']
-#[GridSize,Temp,NTimeSteps,NLangFeatures] = [i for i in TestingPassBack]
+
 
 def LanguageDist(MatrixForAnalysis):
     BigList=[]

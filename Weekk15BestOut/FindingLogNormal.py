@@ -13,9 +13,9 @@ import random
 import scipy as sp
 import scipy.stats as stats
 #%%
-Size = np.linspace(1, 1e10,num=10000)
+Size = np.linspace(1, 1e10,num=1000)
 N = np.linspace(1, 1e10,num=10000)
-NLog = np.logspace(1, 10,num=1000)
+NLog = np.logspace(1, 10,num=100)
 #a = np.log(Size)
 a = -0.05*((np.log(Size/7000))**2)
 N_s = 550*np.exp(a)
