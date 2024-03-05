@@ -33,6 +33,7 @@ GeneralThreshold = 0.5*NLangFeatures
 StepsPerFrame = math.floor(NTimeSteps/NFrames)
 Ones=np.ones(NLangFeatures)
 
+
 ConvergenceThreshold = 0.001 #was 0.01 for large scale
 
 ##Counter variables
