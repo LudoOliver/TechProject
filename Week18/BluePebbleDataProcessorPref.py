@@ -378,7 +378,8 @@ def LanguageVector(MatrixForAnalysis):
 #TempRange.sort()
 ThreshTempValues = [0.015*i for i in range(1,55)]
 ThreshTempLabels = [f"{i:.2f}" for i in ThreshTempValues]
-
+PrefTempValues = [0.015*i for i in range(21,55)]
+PrefTempLabels = [f"{i:.2f}" for i in PrefTempValues]
 TempRange = ThreshTempLabels
 # def LatticeGenerate(SinglePopMatrix,GridSize=300):
     
