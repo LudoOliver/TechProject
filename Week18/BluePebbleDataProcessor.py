@@ -6,16 +6,16 @@ Created on Tue Mar  5 13:42:09 2024
 """
 import math
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import random
-import sys
+#import sys
 #import time
-import cProfile
-from scipy.stats import lognorm , norm, shapiro
-from scipy import stats
+#import cProfile
+#from scipy.stats import lognorm , norm, shapiro
+#from scipy import stats
 
-import statsmodels.api as sm 
-import pylab #as py 
+#import statsmodels.api as sm 
+#import pylab #as py 
 
 global Temp
 global GridSize 
@@ -30,7 +30,7 @@ Ones=np.ones(NLangFeatures)
 
 
 N=40
-plt.rcParams["axes.prop_cycle"] = plt.cycler("color", plt.cm.viridis(np.linspace(0.1,0.8,N)))
+#plt.rcParams["axes.prop_cycle"] = plt.cycler("color", plt.cm.viridis(np.linspace(0.1,0.8,N)))
 ##Simulation Paramaters
 GridSize = 300
 NLangFeatures = 8
@@ -387,7 +387,7 @@ TempRange = ThreshTempLabels
 #         Lattice.append(Speaker(i, SinglePopMatrix[i,:]))
 #     return Lattice
 ThreshBigArray = np.zeros([len(TempRange),256])
-plt.figure()   
+#plt.figure()   
 
 EnergyMatrix = np.zeros([len(TempRange),15])+np.nan
 for i in range(0,len(TempRange)):
@@ -405,50 +405,8 @@ for i in range(0,len(TempRange)):
         print(E)
         EnergyMatrix[i,j] = E
         #print(f"{i*10+j}% done")
-plt.cla()
-EnergyVector= np.nanmean(EnergyMatrix,axis=1) 
-for i in range(15):
-    #plt.plot(TempRange, EnergyMatrix[:,i],alpha=0.4)
-    stats.probplot(ThreshBigArray[i,:], dist="norm", plot=pylab)
-plt.plot(ThreshTempValues ,EnergyVector,color='b')   
-plt.xlabel("Temperature")
-plt.ylabel("Energy")
-plt.yticks([])
-#plt.xlim((0.4,0.7))#, kwargs)
-#plt.ylim((-0.55,-0.2))
-plt.title("Preference Phase Behaviour")
 
-stats.probplot(ThreshBigArray, dist="norm", plot=pylab)
-
-#%%
-plt.figure()  
-for j in range(0,len(TempRange)):
-    OtherArray = ThreshBigArray[j,:]     
-    n,x = np.histogram(OtherArray, bins=20, density=True)
-        #plt.title("Language distribution for")
-    density = stats.gaussian_kde(OtherArray)
-    plt.plot(x,density(x),label=f"T={TempRange[i]}",alpha=0.1)
-    #plt.fill_between(x,density(x),alpha=0.4)
-    #plt.loglog(x,density(x),label=f"T={0.3+0.1*j:.2f}",alpha=1-j*0.1)
-   
-DistName = "ThreshDistForLogLog.jpeg"
-#plt.legend()
-plt.xticks([],[])
-plt.yticks([],[])
-plt.title("Language Distribution of the Thresh Model")
-plt.xlabel("N speakers")
-plt.ylabel("$n_s$ number of languages")
-#plt.savefig(DistName,bbox_inches='tight', dpi=300)
-
-#%%
-fig = plt.figure()
-ax = fig.add_subplot(111)
-#x = stats.loggamma.rvs(c=2.5, size=500, random_state=rng)
-#res = stats.probplot(x, dist=stats.loggamma, sparams=(2.5,), plot=ax)
-for i in range(15):
-    #plt.plot(TempRange, EnergyMatrix[:,i],alpha=0.4)
-    stats.probplot(PrefBigArray[i,:], dist="norm", plot=ax)
-ax.set_title("QQ plot of Prefence model across varying Temp")
-
+np.save("ThreshDistMatrix.npy", ThreshBigArray)
+np.save("ThreshEnergyMatrix.npy", EnergyMatrix)
 
 
