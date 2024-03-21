@@ -291,21 +291,21 @@ def SimpleMetro(TimeSteps):
 #     plt.figtext(0.5, -0.3, subtitle_string , wrap=True, horizontalalignment='center', fontsize=8)
 #     return SpinDict
 
-# def SpinVisualiser():
+def SpinVisualiser():
     
-#     #will have to update not to switch colors
+    #will have to update not to switch colors
 
-#     """ Currently only works for 1d spin"""
-#     zs=np.zeros((GridSize,GridSize))
-#     plt.style.use('_mpl-gallery-nogrid')
-#     #plt.style.use('classic')
-#     for i in range(0,len(Population)):
-#         a,b = Indice2Pos(i)
-#         zs[a-1,b-1]=(np.sum(Population[i].Spin-Ones))
-#     fig, ax = plt.subplots()
-#     ax.axis('off')
-#     ax.imshow(zs,cmap='viridis')
-#     plt.show()
+    """ Currently only works for 1d spin"""
+    zs=np.zeros((GridSize,GridSize))
+    plt.style.use('_mpl-gallery-nogrid')
+    #plt.style.use('classic')
+    for i in range(0,len(Population)):
+        a,b = Indice2Pos(i)
+        zs[a-1,b-1]=(np.sum(Population[i].Spin-Ones))
+    fig, ax = plt.subplots()
+    ax.axis('off')
+    ax.imshow(zs,cmap='viridis')
+    plt.show()
     
 def TestSomeSpins():
     for i in [7,13,15,19,78]:
@@ -378,24 +378,71 @@ def LanguageVector(MatrixForAnalysis):
 #TempRange.sort()
 ThreshTempValues = [0.015*i for i in range(1,55)]
 ThreshTempLabels = [f"{i:.2f}" for i in ThreshTempValues]
-PrefTempValues = [0.015*i for i in range(21,55)]
+
+#PrefTempValues = 
+PrefTempValues = [0.01,0.06,0.24,0.26,0.27,0.28,0.30]+[0.015*i for i in range(21,55)]
 PrefTempLabels = [f"{i:.2f}" for i in PrefTempValues]
-TempRange = ThreshTempLabels
+
+#Pref
+
+TempRange = ThreshTempLabels #SHOUDL BE PREFFFF!
 # def LatticeGenerate(SinglePopMatrix,GridSize=300):
     
 #     Lattice = []
 #     for i in range(0,GridSize**2):
 #         Lattice.append(Speaker(i, SinglePopMatrix[i,:]))
 #     return Lattice
-ThreshBigArray = np.zeros([len(TempRange),256])
+PrefBigArray = np.zeros([len(TempRange),256])
 #plt.figure()   
 
 EnergyMatrix = np.zeros([len(TempRange),15])+np.nan
-for i in range(0,len(TempRange)):
+for i in range(35,40):
     Data = ResultsFor('Thresh', float(TempRange[i]), 300)
+    for j in range(0,1):#len(Data.files)):
+        
+        PrefBigArray[i,:] += LanguageVector(Data[str(j)])
+        #OtherArray += Result
+    #     plt.plot(Result,label=f"Attempt{j}")
+     #= OtherArray
+        Population = 0
+        Population = LatticeGenerate(Data[str(j)])
+        #SpinVisualiser()
+        E = FastEnergy()
+        print(E)
+        EnergyMatrix[i,j] = E
+        #print(f"{i*10+j}% done")
+        SpinVisualiser()
+#np.save("PrefDistMatrix.npy", PrefBigArray)
+#np.save("PrefEnergyMatrix.npy", EnergyMatrix)
+
+#%%
+#TempRange = [0.015*i for i in range(20,40)]+[0.1*i for i in range(3,8)]
+#TempRange.sort()
+ThreshTempValues = [0.015*i for i in range(1,55)]
+ThreshTempLabels = [f"{i:.2f}" for i in ThreshTempValues]
+
+#PrefTempValues = 
+PrefTempValues = [0.01,0.06,0.24,0.26,0.27,0.28,0.30]+[0.015*i for i in range(21,55)]
+PrefTempLabels = [f"{i:.2f}" for i in PrefTempValues]
+
+#Pref
+
+TempRange = PrefTempLabels
+# def LatticeGenerate(SinglePopMatrix,GridSize=300):
+    
+#     Lattice = []
+#     for i in range(0,GridSize**2):
+#         Lattice.append(Speaker(i, SinglePopMatrix[i,:]))
+#     return Lattice
+PrefBigArray = np.zeros([len(TempRange),256])
+#plt.figure()   
+
+EnergyMatrix = np.zeros([len(TempRange),15])+np.nan
+for i in range(0,1):#len(TempRange)):
+    Data = ResultsFor('Pref', float(TempRange[i]), 300)
     for j in range(0,len(Data.files)):
         
-        ThreshBigArray[i,:] += LanguageVector(Data[str(j)])
+        PrefBigArray[i,:] += LanguageVector(Data[str(j)])
         #OtherArray += Result
     #     plt.plot(Result,label=f"Attempt{j}")
      #= OtherArray
@@ -407,7 +454,8 @@ for i in range(0,len(TempRange)):
         EnergyMatrix[i,j] = E
         #print(f"{i*10+j}% done")
 
-np.save("ThreshDistMatrix.npy", ThreshBigArray)
-np.save("ThreshEnergyMatrix.npy", EnergyMatrix)
+np.save("PrefDistMatrix.npy", PrefBigArray)
+np.save("PrefEnergyMatrix.npy", EnergyMatrix)
+##
 
 
