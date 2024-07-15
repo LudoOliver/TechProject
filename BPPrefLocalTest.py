@@ -28,7 +28,7 @@ except:
     except:
         PassedParameter =1
         print("both failed")
-GridSize = 40
+GridSize = 300
 NLangFeatures = 8
 Temp = 0.4 * PassedParameter
 #print(str(Temp)+"Temp Value")
@@ -312,6 +312,24 @@ def MakeArray():
 
 #pr = cProfile.Profile()
 
+def EdgeDistanceDist(): ##Working In current form
+    DistanceFreq = np.zeros(NLangFeatures+1)
+    for i in range(0,len(Population)):
+        Neighbours = SideIndices(i)
+        if Neighbours ==0:
+            break
+        else:
+            for j in Neighbours:
+                NodeDistance = np.count_nonzero(Population[i].Spin!=Population[j].Spin)
+                DistanceFreq[NodeDistance] += 1
+    plt.figure()
+    plt.bar([i for i in range(0,NLangFeatures+1)],DistanceFreq)
+    plt.title("Distance Between Neighbouring Nodes")
+    plt.xticks(ticks=[i for i in range(0,NLangFeatures+1)])
+    plt.xlabel("Distance")
+    plt.ylabel("Frequency")
+    #plt.figtext(0.5, -0.3, subtitle_string , wrap=True, horizontalalignment='center', fontsize=8)
+    return DistanceFreq
 
 DescriptorArray = np.array([GridSize,Temp,NLangFeatures])
 #DescriptorFileName = str((GridSize,Temp,NTimeSteps,NLangFeatures))+'.npz'
@@ -319,8 +337,12 @@ DescriptorFileName = f"PrefL{GridSize}T{Temp:.2f}.npz"
 OutputDict = {}
 for i in range(0,1):
     Population = LatticeGenerate(NLangFeatures)
-    E = PreffMetro(NTimeSteps)
+    EdgeDistanceDist()
+    SpinVisualiser()
+    E = PreffMetro(2)
     CurrentMatrix = MakeArray()
+    LanguageDist()
+    
     OutputDict.update({str(i):CurrentMatrix})
     #BigMatrix = BigMatrix
 
